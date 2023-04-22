@@ -113,7 +113,7 @@ The following is the representation of responsibilities and roles of each common
 Clone this project:
 
 ```sh
-git clone <insert-repo-here>
+git clone git@github.com:francisco-gargiulo/oauth2-authorization-code-flow-with-pkce.git
 ```
 
 Install dependencies:
