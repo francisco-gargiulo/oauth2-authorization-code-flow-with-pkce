@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Main Page</title>
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Welcome to My Website</h1>
+    </header>
+    <nav>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/register.html">Register</a></li>
+          <li><a href="#" onclick="login();">Login</a></li>
+          <li><a href="#" onclick="logout();">Logout</a></li>
+          <li><a href="/profile.html">Profile</a></li>
+        </ul>
+      </nav>
+    </nav>
+    <main>
+      <h2>Content</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </main>
+    <footer>
+      <p>&copy; 2023 - My Website</p>
+    </footer>
+    <script>
+      async function login() {
+        const authorizeURL = new URL("http://localhost:3000/oauth2/authorize");
+
+        // Generate a random code_verifier value
+        const codeVerifier = base64urlEncode(
+          window.crypto.getRandomValues(new Uint8Array(32))
+        );
+
+        const codeChallenge = codeVerifier;
+
+        // Add the required parameters to the authorize URL
+        authorizeURL.search = new URLSearchParams({
+          client_id: "client-id",
+          response_type: "authorization_code",
+          state: "xyz",
+          code_challenge: codeChallenge,
+        });
+
+        // Save the code_verifier value in sessionStorage
+        sessionStorage.setItem("code_verifier", codeVerifier);
+
+        // Redirect the user to the authorize URL
+        window.location.href = authorizeURL;
+      }
+
+      // Function to convert a byte array to a base64url-encoded string
+      function base64urlEncode(buffer) {
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+        return base64
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+      }
+
+      async function logout() {
+        const revokeURL = new URL("http://localhost:3000/oauth2/revoke");
+
+        // call to revoke endpoint
+        const response = await fetch(revokeURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          credentials: "include",
+          body: new URLSearchParams({
+            token: sessionStorage.getItem("access_token"),
+            token_type_hint: "access_token",
+          }),
+        });
+
+        if (response.ok) {
+          sessionStorage.removeItem("access_token");
+        }
+
+        window.location.href = "/";
+      }
+    </script>
+  </body>
+</html>

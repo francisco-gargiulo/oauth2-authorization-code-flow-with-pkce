@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Callback</title>
+  </head>
+  <body>
+    <h1>Callback</h1>
+    <script>
+      async function handleCallback() {
+        // parse the url to get the search params
+        const searchParams = new URLSearchParams(window.location.search);
+
+        // get the code from the search params
+        const code = searchParams.get("code");
+
+        // get the state from the search params
+        const state = searchParams.get("state");
+
+        const codeVerifier = sessionStorage.getItem("code_verifier");
+
+        console.log(codeVerifier)
+
+        // call the token endpoint
+        const response = await fetch("http://localhost:3000/oauth2/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            grant_type: "authorization_code",
+            code,
+            code_verifier: codeVerifier,
+          }),
+        });
+
+        const token = await response.json();
+
+        sessionStorage.setItem("access_token", token.access_token);
+
+        window.location.href = "/";
+      }
+
+      handleCallback();
+    </script>
+  </body>
+</html>

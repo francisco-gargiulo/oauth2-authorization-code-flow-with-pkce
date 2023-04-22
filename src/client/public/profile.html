@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Profile</title>
+  </head>
+  <body>
+    <h1>User Profile</h1>
+    <form onsubmit="return handleSubmit(event)">
+      <label for="id">ID:</label>
+      <input type="text" id="id" name="id" readonly /><br /><br />
+
+      <label for="nickname">Nickname:</label>
+      <input type="text" id="nickname" name="nickname" required /><br /><br />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required /><br /><br />
+
+      <input type="submit" value="Save" />
+    </form>
+
+    <script>
+      const API_BASE_URL = "http://localhost:4000/api";
+
+      async function getUserData(sub) {
+        if (!sub) {
+          alert(
+            "You are not logged in! You will be redirected to the home page."
+          );
+
+          window.location.href = "/";
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/users/${sub}`, {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            },
+          });
+          const data = await response.json();
+
+          document.getElementById("id").value = sub;
+          document.getElementById("nickname").value = data.nickname;
+          document.getElementById("email").value = data.email;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        const user = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/users/${user.id}`, {
+            method: "PUT",
+            body: JSON.stringify(user),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            alert(
+              "User updated successfully! You will be redirected to the home page."
+            );
+
+            window.location.href = "/";
+          } else {
+            alert(`Error: ${response.status} ${response.statusText}`);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      window.addEventListener("load", function () {
+        const accessToken = sessionStorage.getItem("access_token");
+
+        if (!accessToken) {
+          alert(
+            "You are not logged in! You will be redirected to the home page."
+          );
+
+          window.location.href = "/";
+        }
+
+        const sub = JSON.parse(atob(accessToken.split(".")[1])).sub;
+
+        getUserData(sub);
+      });
+    </script>
+  </body>
+</html>
